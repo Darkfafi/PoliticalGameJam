@@ -10,6 +10,9 @@ public class PoliceStateControl : MonoBehaviour
     [SerializeField]
     private TensionManager _tensionManager;
 
+    [SerializeField]
+    private InteractionSystem _interactionSystem;
+
     public static TensionState GetNextNaturalTensionState(TensionState tensionState)
     {
         switch(tensionState)
@@ -31,6 +34,7 @@ public class PoliceStateControl : MonoBehaviour
     protected void Awake()
     {
         _tensionManager.TensionStateChangedEvent += OnTensionStateChangedEvent;
+        _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Pusing, ((RectTransform)transform).anchoredPosition);
     }
 
     protected void Update ()
