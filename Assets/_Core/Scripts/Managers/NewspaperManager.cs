@@ -10,6 +10,8 @@ public class NewspaperManager : MonoBehaviour
     private string[] _headlines;
     [SerializeField]
     private Image _newspaperImage;
+    [SerializeField]
+    private Text _newspaperHeadline;
     private bool _swirling;
 
     private void NewspaperSwirl ()
@@ -18,20 +20,22 @@ public class NewspaperManager : MonoBehaviour
         _swirling = true;
     }
 
+    private void NewspaperScaleOut ()
+    {
+        _newspaperImage.transform.DOScale(0, 0.5f);
+    }
+
     private void Update()
     {
         if (_newspaperImage.transform.localScale != new Vector3(12, 12, 12) && _swirling == true)
         {
             _newspaperImage.transform.Rotate(0, 0, 500 * Time.deltaTime);
         }
-        else if (_newspaperImage.transform.localScale == new Vector3(12, 12, 12) && _newspaperImage.transform.rotation != new Quaternion(0, 0, 0, 0) && _swirling == true)
+        else if (_swirling == true)
         {
             _newspaperImage.transform.DORotate(new Vector3(0 ,0 ,0), 0.5f);
-        }
-
-        if(Input.anyKeyDown)
-        {
-            NewspaperSwirl();
+            Invoke("NewspaperScaleOut", 5f);
+            _swirling = false;
         }
     }
 }
