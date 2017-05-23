@@ -6,13 +6,23 @@ using DG.Tweening;
 
 public class NewspaperManager : MonoBehaviour
 {
-    [SerializeField]
-    private string[] _headlines;
+    public static NewspaperManager instance;
+    public enum newspaperStates { Neutral, Happy, Unhappy }
     [SerializeField]
     private Image _newspaperImage;
     [SerializeField]
+    private Sprite[] _newspaperSprites;
+    [SerializeField]
     private Text _newspaperHeadline;
     private bool _swirling;
+
+    private void Awake ()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+    }
 
     private void NewspaperSwirl ()
     {
@@ -24,6 +34,13 @@ public class NewspaperManager : MonoBehaviour
     {
         _newspaperImage.transform.DOScale(0, 0.5f);
     }
+
+    public void PublishNewspaper (string headline, newspaperStates newspaperState)
+    {
+        _newspaperImage.sprite = _newspaperSprites[(int)newspaperState];
+        _newspaperHeadline.text = headline;
+        NewspaperSwirl();
+    } 
 
     private void Update()
     {
