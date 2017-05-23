@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class GovermentBuildingController : MonoBehaviour
 {
-    private enum _govermentBuildingStates { Neutral, Peaceful, Defended, Damaged }
-    private _govermentBuildingStates _govermentBuildingState;
+    public enum govermentBuildingStates { Neutral, Peaceful, Defended, Damaged }
+    private govermentBuildingStates _govermentBuildingState;
     [SerializeField]
     private Image _govermentBuildingImage;
     [SerializeField]
@@ -14,22 +15,21 @@ public class GovermentBuildingController : MonoBehaviour
 
     void Awake ()
     {
-        _govermentBuildingState = _govermentBuildingStates.Neutral;
+        _govermentBuildingState = govermentBuildingStates.Neutral;
     }
 
     private void SetGovermentBuildingSprite ()
     {
-        switch (_govermentBuildingState)
-        {
-            case _govermentBuildingStates.Neutral:
-                break;
-            case _govermentBuildingStates.Peaceful:
-                break;
-            case _govermentBuildingStates.Defended:
-                break;
-            case _govermentBuildingStates.Damaged:
-                break;
-        }
+        Camera.main.DOShakePosition(Random.Range(2, 4), 15, 15, 15, true);
         _govermentBuildingImage.sprite = _govermentBuildingSprites[(int)_govermentBuildingState];
+    }
+
+    public govermentBuildingStates GovermentBuildingState
+    {
+        set
+        {
+            _govermentBuildingState = value;
+            SetGovermentBuildingSprite();
+        }
     }
 }
