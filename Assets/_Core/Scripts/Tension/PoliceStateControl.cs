@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Overall Police controll
+/// </summary>
 public class PoliceStateControl : MonoBehaviour
 {
     public TensionState TensionState { get; private set; }
@@ -12,6 +15,8 @@ public class PoliceStateControl : MonoBehaviour
 
     [SerializeField]
     private InteractionSystem _interactionSystem;
+
+    private bool _setPoliceOnPoint = false;
 
     public static TensionState GetNextNaturalTensionState(TensionState tensionState)
     {
@@ -41,7 +46,13 @@ public class PoliceStateControl : MonoBehaviour
     {
 	    if(Input.GetKeyDown(KeyCode.Space))
         {
-            SetTensionState(GetNextNaturalTensionState(TensionState)); 
+            if(_setPoliceOnPoint)
+                SetTensionState(GetNextNaturalTensionState(TensionState)); 
+            else
+            {
+                _setPoliceOnPoint = true;
+                // TODO: Spawn Police troops.
+            }
         }
 	}
 
