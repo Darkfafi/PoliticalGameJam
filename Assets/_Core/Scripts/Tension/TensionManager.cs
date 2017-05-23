@@ -61,6 +61,11 @@ public class TensionManager : MonoBehaviour
         TensionRate = Mathf.Clamp(value, 1, float.MaxValue);
     }
 
+    public TensionState GetTensionState()
+    {
+        return GetTensionState(_tensionMeter);
+    }
+
     public TensionState GetTensionState(float value)
     {
         if (value < 20)
