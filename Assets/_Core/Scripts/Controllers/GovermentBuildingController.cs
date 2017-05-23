@@ -13,11 +13,6 @@ public class GovermentBuildingController : MonoBehaviour
     [SerializeField]
     private Sprite[] _govermentBuildingSprites;
 
-    void Awake ()
-    {
-        _govermentBuildingState = govermentBuildingStates.Neutral;
-    }
-
     private void SetGovermentBuildingSprite ()
     {
         Camera.main.DOShakePosition(Random.Range(2, 4), 15, 15, 15, true);
