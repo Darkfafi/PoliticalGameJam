@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 
 /// <summary>
@@ -35,6 +36,12 @@ public class PoliceStateControl : MonoBehaviour
     [SerializeField]
     private Vector2 _gatherAreaSize = new Vector2(3, 1.2f);
 
+    [SerializeField]
+    private SunMovement _sunMovement;
+
+    [SerializeField]
+    private Image _spacebar;
+
     private List<Police> _policeSpawned = new List<Police>();
 
     private bool _setPoliceOnPoint = false;
@@ -43,6 +50,8 @@ public class PoliceStateControl : MonoBehaviour
     private int _indexShow = 0;
 
     private List<List<Police>> _police = new List<List<Police>>();
+
+    private bool _canInteract = true;
 
     public static TensionState GetNextNaturalTensionState(TensionState tensionState)
     {
@@ -78,6 +87,27 @@ public class PoliceStateControl : MonoBehaviour
                 cg.alpha = 0;
             }
         }
+
+
+
+        _sunMovement.DayStartedEvent += OnDayStartedEvent;
+        _sunMovement.DayEndedEvent += OnDayEndedEvent;
+    }
+
+    private void OnDayStartedEvent()
+    {
+        _canInteract = true;
+        Color c = _spacebar.color;
+        c.a = 1f;
+        _spacebar.color = c;
+    }
+
+    private void OnDayEndedEvent()
+    {
+        _canInteract = false;
+        Color c = _spacebar.color;
+        c.a = 0.4f;
+        _spacebar.color = c;
     }
 
     protected void OnDestroy()
@@ -88,8 +118,12 @@ public class PoliceStateControl : MonoBehaviour
 
     protected void Update ()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && this._canInteract)
         {
+            _canInteract = false;
+            Color c = _spacebar.color;
+            c.a = 0.4f;
+            _spacebar.color = c;
             if (_setPoliceOnPoint)
             {
                 SetTensionState(GetNextNaturalTensionState(TensionState));

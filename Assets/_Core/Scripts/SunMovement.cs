@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class SunMovement : MonoBehaviour {
+public class SunMovement : MonoBehaviour
+{
+    public delegate void VoidDelegate();
+    public event VoidDelegate DayEndedEvent;
+    public event VoidDelegate DayStartedEvent;
 
 	[SerializeField]private Image _sun;
 	[SerializeField]private Image _moon;
@@ -22,8 +26,11 @@ public class SunMovement : MonoBehaviour {
 	private Animator _shadow;
 
 	public bool isDay { get { return _day; } }
+    public bool isRunning = true;
 
-	public Vector2 sunPos { get { return _sunPos; } }
+    public Vector2 sunPos { get { return _sunPos; } }
+
+    private float _timerPaper = -1;
 
 	void Awake() {
 		_shadow = GameObject.FindWithTag("Shadow").GetComponent<Animator>();
@@ -38,6 +45,17 @@ public class SunMovement : MonoBehaviour {
 		_moon.transform.position = _moonPos + _rotPos;
 	}
 	void Update () {
+
+        if (_timerPaper != -1)
+        {
+            _timerPaper += Time.deltaTime;
+            if(_timerPaper >= 5f)
+            {
+                _timerPaper = 0;
+            }
+        }
+
+        if (!isRunning) { return; }
 		if(_sunPos.x > 8.4 && _day) {
 			_flow = (0.1f/_speed)*45;
 			_sunPos = new Vector2(-10,_rotHeight);
@@ -80,13 +98,24 @@ public class SunMovement : MonoBehaviour {
 		_shadow.SetTrigger("Start");
 	}
 
-	//wanneer dag start
-	void StartDay() {
+    //wanneer dag start
+    void StartDay()
+    {
         NewspaperManager.instance.PublishNewspaper("test", NewspaperManager.newspaperStates.Neutral);
-	}
+
+        isRunning = false;
+        this._timerPaper = 0;
+
+        if (DayStartedEvent != null)
+            DayStartedEvent();
+
+    }
 
 	//wanneer dag eindigt
-	void EndDay() {
+	void EndDay()
+    {
 
+        if (this.DayEndedEvent != null)
+            DayEndedEvent();
 	}
 }
