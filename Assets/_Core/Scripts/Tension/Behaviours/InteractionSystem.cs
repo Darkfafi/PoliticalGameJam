@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using System;
 
 public class InteractionSystem : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class InteractionSystem : MonoBehaviour
         Fighting,
         Murder
     }
+
+    public delegate void InteractionTypeDelegate(InteractionType interactionType);
+    public event InteractionTypeDelegate InteractionEndedEvent;
 
     private List<InteractionProcess> _interactions = new List<InteractionProcess>();
 
@@ -31,6 +35,10 @@ public class InteractionSystem : MonoBehaviour
 
             if (_interactions[i].HasEnded)
             {
+                if(InteractionEndedEvent != null)
+                {
+                    InteractionEndedEvent(_interactions[i].InteractionType);
+                }
                 _interactions.RemoveAt(i);
             }
         }
@@ -65,7 +73,17 @@ public class InteractionSystem : MonoBehaviour
 
         public void Update()
         {
+            if(((RectTransform)_police.transform).anchoredPosition.x == _policePos.x && ((RectTransform)_police.transform).anchoredPosition.y == _policePos.y
+               && ((RectTransform)_protester.transform).anchoredPosition.x == _protesterPos.x && ((RectTransform)_protester.transform).anchoredPosition.y == _protesterPos.y)
+            {
+                doAnimationType();
+            }
+        }
 
+        private void doAnimationType()
+        {
+            Debug.Log("Animation");
+            HasEnded = true;
         }
 
         private void FaceOneAnother()

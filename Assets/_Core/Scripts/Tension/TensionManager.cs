@@ -58,7 +58,7 @@ public class TensionManager : MonoBehaviour
 
     public void SetTensionRate(float value)
     {
-        TensionRate = Mathf.Clamp(value, 1, float.MaxValue);
+        TensionRate = Mathf.Clamp(value, 0, float.MaxValue);
     }
 
     public TensionState GetTensionState()
@@ -109,10 +109,17 @@ public class TensionManager : MonoBehaviour
                 TensionStateChangedEvent(GetTensionState(_tensionMeter));
         }
 
-        if (_currentlySpawnedProtesters.Count < _currentWishedGatherAmount)
-            SpawnProtestor();
-
         _protestCrowds = _protestCrowdsRoot.GetComponentsInChildren<StateExpressionBehaviour>();
+
+
+        if (GetTensionState(_tensionMeter) != TensionState.Idle)
+        {
+            if ((GetTensionState(_tensionMeter) == TensionState.Pushy && _currentlySpawnedProtesters.Count < 3) || (GetTensionState(_tensionMeter) == TensionState.Aggression && _currentlySpawnedProtesters.Count < 5) || (GetTensionState(_tensionMeter) == TensionState.Outbreak && _currentlySpawnedProtesters.Count < 8))
+            {
+                SpawnProtestor();
+            }
+        }
+
     }
 
     private void SpawnProtestor()
