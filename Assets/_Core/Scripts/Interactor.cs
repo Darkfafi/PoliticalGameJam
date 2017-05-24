@@ -26,15 +26,20 @@ public class Interactor : MonoBehaviour
 
     public static T GetFreeInteractor<T>(T[] interactors) where T : Interactor
     {
-        for(int i = interactors.Length - 1; i >= 0; i++)
+        List<T> free = new List<T>();
+
+        for(int i = interactors.Length - 1; i >= 0; i--)
         {
             if(!interactors[i].IsInteracting)
             {
-                return interactors[i];
+                free.Add(interactors[i]);
             }
         }
 
-        return null;
+        if (free.Count > 0)
+            return free[UnityEngine.Random.Range(0, free.Count)];
+        else
+            return null;
     }
 
     protected void Update()
