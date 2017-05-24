@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 /// <summary>
 /// Overall Police controll
@@ -16,9 +17,32 @@ public class PoliceStateControl : MonoBehaviour
     [SerializeField]
     private InteractionSystem _interactionSystem;
 
+    [SerializeField]
+    private GameObject _policeSpawnRoot;
+
+    [SerializeField]
+    private GameObject _policeCrowdsRoot;
+
+    [SerializeField]
+    private StateExpressionBehaviour[] _policeCrowds;
+
+    [SerializeField]
+    private List<CanvasGroup> _crowdsCanvasGroups = new List<CanvasGroup>();
+
+    [SerializeField]
+    private RectTransform _protestorsGatherArea;
+
+    [SerializeField]
+    private Vector2 _gatherAreaSize = new Vector2(3, 1.2f);
+
+    private List<Police> _policeSpawned = new List<Police>();
+
     private bool _setPoliceOnPoint = false;
 
     private float _timeSinceInteraction = 0;
+    private int _indexShow = 0;
+
+    private List<List<Police>> _police = new List<List<Police>>();
 
     public static TensionState GetNextNaturalTensionState(TensionState tensionState)
     {
@@ -41,28 +65,59 @@ public class PoliceStateControl : MonoBehaviour
     protected void Awake()
     {
         _tensionManager.TensionStateChangedEvent += OnTensionStateChangedEvent;
-        _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Pushing, ((RectTransform)transform).anchoredPosition);
+        _interactionSystem.InteractionEndedEvent += OnInteractionEndedEvent;
+
+        _policeCrowds = this._policeCrowdsRoot.GetComponentsInChildren<StateExpressionBehaviour>();
+        Debug.Log(_policeCrowds.Length);
+        for (int i = 0; i < _policeCrowds.Length; i++)
+        {
+            CanvasGroup cg = _policeCrowds[i].GetComponentInParent<CanvasGroup>();
+            if(!_crowdsCanvasGroups.Contains(cg))
+            {
+                _crowdsCanvasGroups.Add(cg);
+                cg.alpha = 0;
+            }
+        }
     }
 
     protected void OnDestroy()
     {
         _tensionManager.TensionStateChangedEvent -= OnTensionStateChangedEvent;
+        _interactionSystem.InteractionEndedEvent -= OnInteractionEndedEvent;
     }
 
     protected void Update ()
     {
-	    if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            if(_setPoliceOnPoint)
-                SetTensionState(GetNextNaturalTensionState(TensionState)); 
+            if (_setPoliceOnPoint)
+            {
+                SetTensionState(GetNextNaturalTensionState(TensionState));
+            }
             else
             {
                 _setPoliceOnPoint = true;
-                // TODO: Spawn Police troops.
+            }
+
+            if (_indexShow <= _crowdsCanvasGroups.Count - 1)
+            { 
+                _crowdsCanvasGroups[this._indexShow].alpha = 1;
+                _crowdsCanvasGroups[this._indexShow].transform.localScale = new Vector3(0, 0, 0);
+                _crowdsCanvasGroups[this._indexShow].transform.DOScale(1, 1f).SetEase(Ease.OutBounce);
+                _indexShow++;
             }
         }
 
         _timeSinceInteraction += Time.deltaTime;
+
+
+        if (TensionState != TensionState.Idle)
+        {
+            if ((TensionState == TensionState.Pushy && _policeSpawned.Count < 3) || (TensionState == TensionState.Aggression && _policeSpawned.Count < 5) || (TensionState == TensionState.Outbreak && _policeSpawned.Count < 8))
+            {
+                SpawnPolice();
+            }
+        }
 
         if (_timeSinceInteraction > 4 + UnityEngine.Random.value * 4)
         {
@@ -73,7 +128,7 @@ public class PoliceStateControl : MonoBehaviour
             switch (_tensionManager.GetTensionState())
             {
                 case TensionState.Aggression:
-                    //TODO: x percentage chance on murder which grows & after murder go to outbreak state for both groups. else fighting and pushing
+                    _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Fighting, interactionLocation);
                     break;
 
                 case TensionState.Idle:
@@ -83,15 +138,41 @@ public class PoliceStateControl : MonoBehaviour
                     _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Pushing, interactionLocation);
                     break;
                 case TensionState.Outbreak:
-                    // TODO: FULL MURDER AND FIGHTING
+                    _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Murder, interactionLocation);
                     break;
             }
         }
-	}
+    }
+
+    private void OnInteractionEndedEvent(InteractionSystem.InteractionType interactionType)
+    {
+        if(interactionType == InteractionSystem.InteractionType.Murder)
+        {
+            _tensionManager.SetTensionRate(1000000);
+        }
+    }
 
     private void SetTensionState(TensionState tensionState)
     {
         TensionState = tensionState;
+        float newRate = 1;
+        switch (tensionState)
+        {
+            case TensionState.Aggression:
+                newRate = 3;
+                break;
+
+            case TensionState.Idle:
+                newRate = 0;
+                break;
+            case TensionState.Pushy:
+                newRate = 1;
+                break;
+            case TensionState.Outbreak:
+                newRate = 4;
+                break;
+        }
+        _tensionManager.SetTensionRate(_tensionManager.TensionRate + newRate);
     }
 
     private void OnTensionStateChangedEvent(TensionState tensionState)
@@ -100,5 +181,22 @@ public class PoliceStateControl : MonoBehaviour
         {
             SetTensionState(TensionState.Outbreak);
         }
+    }
+
+    private void SpawnPolice()
+    {
+        Police p = GameObject.Instantiate<Police>(Resources.Load<Police>("Police"));
+        p.transform.SetParent(_policeSpawnRoot.transform, false);
+        _policeSpawned.Add(p);
+        Vector2 pos = new Vector2(_protestorsGatherArea.anchoredPosition.x - _gatherAreaSize.x * 50, _protestorsGatherArea.anchoredPosition.y - _gatherAreaSize.y * 50);
+        pos.x += _gatherAreaSize.x * (100 * UnityEngine.Random.value);
+        pos.y += _gatherAreaSize.y * (100 * UnityEngine.Random.value);
+        p.WalkTo(pos, 15);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(_protestorsGatherArea.transform.position, _gatherAreaSize);
     }
 }
