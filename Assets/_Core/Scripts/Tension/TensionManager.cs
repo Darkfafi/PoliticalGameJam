@@ -103,6 +103,7 @@ public class TensionManager : MonoBehaviour
             for(int i = 0; i < _protestCrowds.Length; i++)
             {
                 _protestCrowds[i].SetTensionState(GetTensionState(_tensionMeter));
+                _protestCrowds[i].GetComponent<Crowd>().setTensionStateSigns(GetTensionState(_tensionMeter));
             }
 
             if(TensionStateChangedEvent != null)
