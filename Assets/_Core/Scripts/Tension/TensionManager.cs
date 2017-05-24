@@ -1,7 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Overall protester behaviour controller.
+/// </summary>
 public class TensionManager : MonoBehaviour
 {
     public event TensionStateDelegate TensionStateChangedEvent;
@@ -11,6 +15,26 @@ public class TensionManager : MonoBehaviour
 
     private float _tensionMeter = 0;
     private float _lastTensionMeterValue = 0;
+
+    [SerializeField]
+    private GameObject _protestCrowdsRoot;
+
+    [SerializeField]
+    private GameObject _protestorSpawnRoot;
+
+    [Header("Gather spot")]
+
+    [SerializeField]
+    private RectTransform _protestorsGatherArea;
+
+    [SerializeField]
+    private Vector2 _gatherAreaSize = new Vector2(5, 2);
+
+    private StateExpressionBehaviour[] _protestCrowds;
+
+    private int _currentWishedGatherAmount = 5;
+
+    private List<Protester> _currentlySpawnedProtesters = new List<Protester>();
 
     public void ResumeTensionProgression()
     {
@@ -37,6 +61,11 @@ public class TensionManager : MonoBehaviour
         TensionRate = Mathf.Clamp(value, 1, float.MaxValue);
     }
 
+    public TensionState GetTensionState()
+    {
+        return GetTensionState(_tensionMeter);
+    }
+
     public TensionState GetTensionState(float value)
     {
         if (value < 20)
@@ -60,6 +89,7 @@ public class TensionManager : MonoBehaviour
     protected void Awake()
     {
         SetTensionRate(TensionRate);
+        ResumeTensionProgression();
     }
 
     protected void Update()
@@ -70,8 +100,35 @@ public class TensionManager : MonoBehaviour
 
         if(GetTensionState(_lastTensionMeterValue) != GetTensionState(_tensionMeter))
         {
+            for(int i = 0; i < _protestCrowds.Length; i++)
+            {
+                _protestCrowds[i].SetTensionState(GetTensionState(_tensionMeter));
+            }
+
             if(TensionStateChangedEvent != null)
                 TensionStateChangedEvent(GetTensionState(_tensionMeter));
         }
+
+        if (_currentlySpawnedProtesters.Count < _currentWishedGatherAmount)
+            SpawnProtestor();
+
+        _protestCrowds = _protestCrowdsRoot.GetComponentsInChildren<StateExpressionBehaviour>();
+    }
+
+    private void SpawnProtestor()
+    {
+        Protester p = GameObject.Instantiate<Protester>(Resources.Load<Protester>("Protester"));
+        p.transform.SetParent(_protestorSpawnRoot.transform, false);
+        _currentlySpawnedProtesters.Add(p);
+        Vector2 pos = new Vector2(_protestorsGatherArea.anchoredPosition.x - _gatherAreaSize.x * 50, _protestorsGatherArea.anchoredPosition.y - _gatherAreaSize.y * 50);
+        pos.x += _gatherAreaSize.x * (100 * UnityEngine.Random.value);
+        pos.y += _gatherAreaSize.y * (100 * UnityEngine.Random.value);
+        p.WalkTo(pos, 15);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(_protestorsGatherArea.transform.position, _gatherAreaSize);
     }
 }

@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Overall Police controll
+/// </summary>
 public class PoliceStateControl : MonoBehaviour
 {
     public TensionState TensionState { get; private set; }
@@ -12,6 +15,10 @@ public class PoliceStateControl : MonoBehaviour
 
     [SerializeField]
     private InteractionSystem _interactionSystem;
+
+    private bool _setPoliceOnPoint = false;
+
+    private float _timeSinceInteraction = 0;
 
     public static TensionState GetNextNaturalTensionState(TensionState tensionState)
     {
@@ -34,14 +41,51 @@ public class PoliceStateControl : MonoBehaviour
     protected void Awake()
     {
         _tensionManager.TensionStateChangedEvent += OnTensionStateChangedEvent;
-        _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Pusing, ((RectTransform)transform).anchoredPosition);
+        _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Pushing, ((RectTransform)transform).anchoredPosition);
+    }
+
+    protected void OnDestroy()
+    {
+        _tensionManager.TensionStateChangedEvent -= OnTensionStateChangedEvent;
     }
 
     protected void Update ()
     {
 	    if(Input.GetKeyDown(KeyCode.Space))
         {
-            SetTensionState(GetNextNaturalTensionState(TensionState)); 
+            if(_setPoliceOnPoint)
+                SetTensionState(GetNextNaturalTensionState(TensionState)); 
+            else
+            {
+                _setPoliceOnPoint = true;
+                // TODO: Spawn Police troops.
+            }
+        }
+
+        _timeSinceInteraction += Time.deltaTime;
+
+        if (_timeSinceInteraction > 4 + UnityEngine.Random.value * 4)
+        {
+            _timeSinceInteraction = 0;
+
+            Vector2 interactionLocation = ((RectTransform)transform).anchoredPosition;
+
+            switch (_tensionManager.GetTensionState())
+            {
+                case TensionState.Aggression:
+                    //TODO: x percentage chance on murder which grows & after murder go to outbreak state for both groups. else fighting and pushing
+                    break;
+
+                case TensionState.Idle:
+                    // DO NOTHING
+                    break;
+                case TensionState.Pushy:
+                    _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Pushing, interactionLocation);
+                    break;
+                case TensionState.Outbreak:
+                    // TODO: FULL MURDER AND FIGHTING
+                    break;
+            }
         }
 	}
 

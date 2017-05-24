@@ -7,7 +7,7 @@ public class InteractionSystem : MonoBehaviour
 {
     public enum InteractionType
     {
-        Pusing,
+        Pushing,
         Fighting,
         Murder
     }
