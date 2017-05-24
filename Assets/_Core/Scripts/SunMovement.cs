@@ -82,7 +82,7 @@ public class SunMovement : MonoBehaviour {
 
 	//wanneer dag start
 	void StartDay() {
-
+        NewspaperManager.instance.PublishNewspaper("test", NewspaperManager.newspaperStates.Neutral);
 	}
 
 	//wanneer dag eindigt
