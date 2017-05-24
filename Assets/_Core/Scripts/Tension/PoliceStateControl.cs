@@ -68,7 +68,7 @@ public class PoliceStateControl : MonoBehaviour
         _interactionSystem.InteractionEndedEvent += OnInteractionEndedEvent;
 
         _policeCrowds = this._policeCrowdsRoot.GetComponentsInChildren<StateExpressionBehaviour>();
-        Debug.Log(_policeCrowds.Length);
+
         for (int i = 0; i < _policeCrowds.Length; i++)
         {
             CanvasGroup cg = _policeCrowds[i].GetComponentInParent<CanvasGroup>();
@@ -125,7 +125,13 @@ public class PoliceStateControl : MonoBehaviour
 
             Vector2 interactionLocation = ((RectTransform)transform).anchoredPosition;
 
-            switch (_tensionManager.GetTensionState())
+            interactionLocation.x -= 30;
+            interactionLocation.x += 60 * UnityEngine.Random.value;
+            interactionLocation.y -= 60;
+            interactionLocation.y += 120 * UnityEngine.Random.value;
+
+
+            switch (TensionState)
             {
                 case TensionState.Aggression:
                     _interactionSystem.TryInteractionMatch(InteractionSystem.InteractionType.Fighting, interactionLocation);
@@ -148,7 +154,7 @@ public class PoliceStateControl : MonoBehaviour
     {
         if(interactionType == InteractionSystem.InteractionType.Murder)
         {
-            _tensionManager.SetTensionRate(1000000);
+            _tensionManager.SetTensionRate(1001337);
         }
     }
 
@@ -159,20 +165,26 @@ public class PoliceStateControl : MonoBehaviour
         switch (tensionState)
         {
             case TensionState.Aggression:
-                newRate = 3;
+                newRate = _tensionManager.TensionRate + 3;
                 break;
 
             case TensionState.Idle:
                 newRate = 0;
                 break;
             case TensionState.Pushy:
-                newRate = 1;
+                newRate = _tensionManager.TensionRate + 1;
                 break;
             case TensionState.Outbreak:
-                newRate = 4;
+                newRate = _tensionManager.TensionRate + 4;
                 break;
         }
-        _tensionManager.SetTensionRate(_tensionManager.TensionRate + newRate);
+
+        for (int i = 0; i < _policeCrowds.Length; i++)
+        {
+            _policeCrowds[i].SetTensionState(TensionState);
+        }
+
+        _tensionManager.SetTensionRate(newRate);
     }
 
     private void OnTensionStateChangedEvent(TensionState tensionState)

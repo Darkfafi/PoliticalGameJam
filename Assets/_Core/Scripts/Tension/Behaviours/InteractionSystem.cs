@@ -22,7 +22,6 @@ public class InteractionSystem : MonoBehaviour
     {
         Police police = Interactor.GetFreeInteractor(FindObjectsOfType<Police>());
         Protester protester = Interactor.GetFreeInteractor(FindObjectsOfType<Protester>());
-
         if (police == null || protester == null) { return; }
         _interactions.Add(new InteractionProcess(interactionType, protester, police, interactionPosition));
     }
