@@ -43,6 +43,7 @@ public class SunMovement : MonoBehaviour {
 			_sunPos = new Vector2(-10,_rotHeight);
 			_moonPos = new Vector2(-10,_rotHeight);
 			_day = false;
+			EndDay();
 		} else {
 			if(_day) {
 				if(_animation) {
@@ -62,6 +63,7 @@ public class SunMovement : MonoBehaviour {
 			_moonPos = new Vector2(-10,_rotHeight);
 			_day = true;
 			StartShadow();
+			StartDay();
 		} else {
 			if(!_day) {
 				_flow+=0.1f/_speed*_moonSpeed;	
@@ -76,5 +78,15 @@ public class SunMovement : MonoBehaviour {
 
 	void StartShadow() {
 		_shadow.SetTrigger("Start");
+	}
+
+	//wanneer dag start
+	void StartDay() {
+
+	}
+
+	//wanneer dag eindigt
+	void EndDay() {
+
 	}
 }
