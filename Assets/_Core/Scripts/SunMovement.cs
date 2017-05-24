@@ -7,8 +7,8 @@ public class SunMovement : MonoBehaviour
     public event VoidDelegate DayEndedEvent;
     public event VoidDelegate DayStartedEvent;
 
-	[SerializeField]private Image _sun;
-	[SerializeField]private Image _moon;
+	[SerializeField]private SpriteRenderer _sun;
+	[SerializeField]private SpriteRenderer _moon;
 	private Vector2 _sunPos;
 	private Vector2 _moonPos;
 	private Vector2 _rotPos;
