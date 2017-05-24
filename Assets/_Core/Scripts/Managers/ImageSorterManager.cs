@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ImageSorterManager : MonoBehaviour
 {
-    private void Start ()
+    private void Update ()
     {
         List<RectTransform> items = new List<RectTransform>();
         foreach (RectTransform item in gameObject.GetComponentsInChildren<RectTransform>())

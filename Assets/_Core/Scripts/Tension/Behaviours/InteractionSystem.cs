@@ -82,6 +82,7 @@ public class InteractionSystem : MonoBehaviour
         private void doAnimationType()
         {
             Debug.Log("Animation");
+            _police.GetComponent<Animator>().SetTrigger("Attack");
             HasEnded = true;
         }
 
